@@ -20,8 +20,8 @@ export default function ContactUs() {
           </div>
           <h1 className="text-4xl font-extrabold text-white text-center drop-shadow-xl">Contact Us</h1>
           <p className="text-lg sm:text-xl text-white/90 text-center max-w-lg">
-            Have questions or want to work with us? Reach out and we'll get back to you as soon as possible.
-          </p>
+  Have questions or want to work with us? Reach out and we&apos;ll get back to you as soon as possible.
+</p>
         </div>
       </section>
       <style>{`
