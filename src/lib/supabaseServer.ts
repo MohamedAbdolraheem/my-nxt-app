@@ -1,10 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
+import { RequestCookies } from 'next/dist/server/web/spec-extension/cookies';
 
 interface SupabaseServerCtx {
-  cookies: {
-    getAll: () => Array<{ name: string; value: string }>;
-    set: (name: string, value: string, options?: Record<string, unknown>) => void;
-  };
+  cookies: RequestCookies;
   canSet?: boolean;
 }
 
@@ -25,17 +23,10 @@ export const supabaseServer = async (ctx: SupabaseServerCtx) => {
         ...(canSet && {
           setAll: (cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) => {
             console.log('Setting cookies:', cookiesToSet.map((c: { name: string; value: string; options?: Record<string, unknown> }) => c.name));
-            cookiesToSet.forEach(({ name, value, options }) => {
-              // Use the original options from Supabase, but ensure proper defaults
-              const cookieOptions = {
-                ...options,
-                httpOnly: options?.httpOnly ?? true,
-                secure: options?.secure ?? (process.env.NODE_ENV === 'production'),
-                sameSite: options?.sameSite ?? 'lax',
-                path: options?.path ?? '/',
-              };
-              console.log('Setting cookie with options:', name, cookieOptions);
-              cookies.set(name, value, cookieOptions);
+            cookiesToSet.forEach(({ name, value }) => {
+              // Next.js RequestCookies.set() only accepts name and value
+              console.log('Setting cookie:', name);
+              cookies.set(name, value);
             });
           },
         }),
