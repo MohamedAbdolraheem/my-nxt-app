@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { RequestCookies } from 'next/dist/server/web/spec-extension/cookies';
 
 interface SupabaseServerCtx {
-  cookies: RequestCookies | Promise<RequestCookies> | { getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void };
+  cookies: RequestCookies | Promise<RequestCookies> | Promise<{ getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void }> | { getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void };
   canSet?: boolean;
 }
 
