@@ -175,7 +175,11 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: {
+      amount?: number;
+      note?: string | null;
+      category_id?: number;
+    } = {};
     if (amount !== undefined) updateData.amount = amount;
     if (note !== undefined) updateData.note = note?.trim() || null;
     if (category_id !== undefined) updateData.category_id = category_id;

@@ -34,15 +34,9 @@ export async function middleware(request: NextRequest) {
   const user = session?.user;
 
   // Debug logging
-  console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', user ? 'Authenticated' : 'Not authenticated', 'Session:', !!session);
-  console.log('All cookies:', request.cookies.getAll().map(c => ({ name: c.name, value: c.value.substring(0, 20) + '...' })));
-
-  // Define protected routes
-  const protectedRoutes = ['/dashboard', '/expenses', '/categories'];
-
-  // Temporarily disable redirects to test session
   console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', user ? 'Authenticated' : 'Not authenticated', 'Session:', !!session, 'Cookies:', request.cookies.getAll().map(c => c.name));
 
+  // Temporarily disable redirects to test session
   // Only redirect if accessing protected route without authentication
   // if (isProtectedRoute && !user) {
   //   // Redirect to login if accessing protected route without authentication

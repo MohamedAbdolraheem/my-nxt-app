@@ -222,7 +222,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the expense
-    const expenseData: any = {
+    const expenseData: {
+      amount: number;
+      user_id: string;
+      note: string | null;
+      category_id?: number;
+    } = {
       amount,
       user_id: user.id,
       note: note?.trim() || null
