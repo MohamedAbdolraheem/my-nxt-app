@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -39,11 +39,9 @@ export async function middleware(request: NextRequest) {
 
   // Define protected routes
   const protectedRoutes = ['/dashboard', '/expenses', '/categories'];
-  const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route));
 
   // Temporarily disable redirects to test session
-  console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', user ? 'Authenticated' : 'Not authenticated', 'Session:', !!session);
-  console.log('All cookies:', request.cookies.getAll().map(c => ({ name: c.name, value: c.value.substring(0, 20) + '...' })));
+  console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', user ? 'Authenticated' : 'Not authenticated', 'Session:', !!session, 'Cookies:', request.cookies.getAll().map(c => c.name));
 
   // Only redirect if accessing protected route without authentication
   // if (isProtectedRoute && !user) {

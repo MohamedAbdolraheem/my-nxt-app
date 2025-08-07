@@ -1,22 +1,38 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Expense {
+  id: string;
+  amount: number;
+  note: string | null;
+  created_at: string;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+}
+
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Fetch categories and expenses
   useEffect(() => {
     fetch('/api/categories').then(res => res.json()).then(res => {
-      if (res.success) setCategories(res.data);
+      if (res.categories) setCategories(res.categories);
     });
     fetch('/api/expenses').then(res => res.json()).then(res => {
-      if (res.success) setExpenses(res.data);
+      if (res.expenses) setExpenses(res.expenses);
     });
   }, []);
 
@@ -28,11 +44,15 @@ export default function ExpensesPage() {
     const res = await fetch('/api/expenses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: Number(amount), note, category_id: categoryId }),
+      body: JSON.stringify({ 
+        amount: Number(amount), 
+        note, 
+        category_id: categoryId ? Number(categoryId) : undefined 
+      }),
     }).then(r => r.json());
     setLoading(false);
-    if (res.success) {
-      setExpenses((prev) => [res.data, ...prev]);
+    if (res.expense) {
+      setExpenses((prev) => [res.expense, ...prev]);
       setAmount('');
       setNote('');
       setCategoryId('');
@@ -91,7 +111,7 @@ export default function ExpensesPage() {
                     required
                   >
                     <option value="">Select category</option>
-                    {categories.map((cat: any) => (
+                    {categories.map((cat: Category) => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
@@ -123,7 +143,7 @@ export default function ExpensesPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {expenses.map((exp: any) => (
+                  {expenses.map((exp: Expense) => (
                     <div key={exp.id} className="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center">
@@ -136,7 +156,7 @@ export default function ExpensesPage() {
                           <p className="text-sm text-slate-600 dark:text-slate-400">{exp.note}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200">
-                              {exp.category?.name}
+                              {exp.category?.name || 'Uncategorized'}
                             </span>
                             <span className="text-xs text-slate-500 dark:text-slate-400">
                               {new Date(exp.created_at).toLocaleDateString()}
