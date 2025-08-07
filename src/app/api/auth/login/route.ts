@@ -6,11 +6,11 @@ export async function POST(req: NextRequest) {
     // Create server client using existing function
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: true });
 
-    // Parse request body with error handling
+    // Parse request body
     let body;
     try {
       body = await req.json();
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }

@@ -19,7 +19,7 @@ export default function ContactUs() {
             </div>
             <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Need Help?</h1>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Having trouble with your expense tracking? We're here to help you get the most out of your financial management.
+              Having trouble with your expense tracking? We&apos;re here to help you get the most out of your financial management.
             </p>
           </div>
           

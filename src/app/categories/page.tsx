@@ -1,8 +1,13 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -12,7 +17,7 @@ export default function CategoriesPage() {
     fetch('/api/categories')
       .then(res => res.json())
       .then(res => {
-        if (res.success) setCategories(res.data);
+        if (res.categories) setCategories(res.categories);
         else setError(res.error || 'Failed to load categories');
       });
   }, []);
@@ -28,8 +33,8 @@ export default function CategoriesPage() {
       body: JSON.stringify({ name }),
     }).then(r => r.json());
     setLoading(false);
-    if (res.success) {
-      setCategories((prev) => [...prev, res.data]);
+    if (res.category) {
+      setCategories((prev) => [...prev, res.category]);
       setName('');
     } else {
       setError(res.error || 'Failed to add category');
@@ -90,7 +95,7 @@ export default function CategoriesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {categories.map((cat: any) => (
+                  {categories.map((cat: Category) => (
                     <div key={cat.id} className="flex items-center gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
                         <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
