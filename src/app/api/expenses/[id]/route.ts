@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 // GET /api/expenses/[id] - Get a specific expense
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -19,7 +19,8 @@ export async function GET(
       );
     }
 
-    const expenseId = params.id;
+    const { id } = await params;
+    const expenseId = id;
 
     // Fetch the expense
     const { data: expense, error } = await supabase
@@ -63,7 +64,7 @@ export async function GET(
 // PUT /api/expenses/[id] - Update an expense
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -78,7 +79,8 @@ export async function PUT(
       );
     }
 
-    const expenseId = params.id;
+    const { id } = await params;
+    const expenseId = id;
 
     // Parse request body
     let body;
@@ -224,7 +226,7 @@ export async function PUT(
 // DELETE /api/expenses/[id] - Delete an expense
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -239,7 +241,8 @@ export async function DELETE(
       );
     }
 
-    const expenseId = params.id;
+    const { id } = await params;
+    const expenseId = id;
 
     // Check if expense exists and belongs to user
     const { data: existingExpense, error: fetchError } = await supabase

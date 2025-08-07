@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 // GET /api/categories/[id] - Get a specific category
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -19,7 +19,8 @@ export async function GET(
       );
     }
 
-    const categoryId = parseInt(params.id);
+    const { id } = await params;
+    const categoryId = parseInt(id);
     if (isNaN(categoryId)) {
       return NextResponse.json(
         { error: 'Invalid category ID' },
@@ -63,7 +64,7 @@ export async function GET(
 // PUT /api/categories/[id] - Update a category
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -78,7 +79,8 @@ export async function PUT(
       );
     }
 
-    const categoryId = parseInt(params.id);
+    const { id } = await params;
+    const categoryId = parseInt(id);
     if (isNaN(categoryId)) {
       return NextResponse.json(
         { error: 'Invalid category ID' },
@@ -186,7 +188,7 @@ export async function PUT(
 // DELETE /api/categories/[id] - Delete a category
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
@@ -201,7 +203,8 @@ export async function DELETE(
       );
     }
 
-    const categoryId = parseInt(params.id);
+    const { id } = await params;
+    const categoryId = parseInt(id);
     if (isNaN(categoryId)) {
       return NextResponse.json(
         { error: 'Invalid category ID' },
