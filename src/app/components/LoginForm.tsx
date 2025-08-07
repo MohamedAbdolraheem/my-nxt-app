@@ -1,53 +1,50 @@
 "use client";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { createBrowserClient } from '@supabase/ssr';
+import { useRouter } from "next/navigation";
 
-export default function SignInForm() {
+export default function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return;
-    }
-
     setLoading(true);
     
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email: email.trim().toLowerCase(), 
+        password 
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setError(data.error || "Sign up failed. Please try again.");
-      } else {
-        // Show success message and redirect
-        alert(data.message || "Account created successfully! Please check your email to verify your account.");
-        router.push("/login");
+
+      if (error) {
+        console.error('Login error:', error);
+        setError(error.message);
+        return;
       }
+
+      if (data.user) {
+        console.log('Login successful - User:', data.user.email, 'Session:', !!data.session);
+        // Use router.push for client-side navigation
+        router.push('/dashboard');
+        router.refresh(); // Refresh to ensure server components get updated session
+      } else {
+        setError('Login failed - no user data received');
+      }
+      
     } catch (err) {
-      console.error("Signup error:", err);
-      setError("Network error. Please check your connection and try again.");
+      console.error('Login error:', err);
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -55,13 +52,13 @@ export default function SignInForm() {
 
   return (
     <>
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white text-center drop-shadow-xl mb-6">Create Account</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white text-center drop-shadow-xl mb-6">Welcome Back</h1>
       <form className="flex flex-col gap-6 w-full" onSubmit={handleSubmit}>
         {/* Email */}
         <div className="relative">
           <input
             type="email"
-            id="signin-email"
+            id="login-email"
             className="peer w-full px-4 pt-6 pb-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-transparent text-lg"
             placeholder="Email"
             required
@@ -69,7 +66,7 @@ export default function SignInForm() {
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
           />
-          <label htmlFor="signin-email" className="absolute left-4 top-2 text-slate-500 dark:text-slate-400 text-base transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-focus:top-2 peer-focus:text-base">
+          <label htmlFor="login-email" className="absolute left-4 top-2 text-slate-500 dark:text-slate-400 text-base transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-focus:top-2 peer-focus:text-base">
             Email
           </label>
         </div>
@@ -78,7 +75,7 @@ export default function SignInForm() {
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
-            id="signin-password"
+            id="login-password"
             className="peer w-full px-4 pt-6 pb-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-transparent text-lg"
             placeholder="Password"
             required
@@ -86,7 +83,7 @@ export default function SignInForm() {
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
           />
-          <label htmlFor="signin-password" className="absolute left-4 top-2 text-slate-500 dark:text-slate-400 text-base transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-focus:top-2 peer-focus:text-base">
+          <label htmlFor="login-password" className="absolute left-4 top-2 text-slate-500 dark:text-slate-400 text-base transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-focus:top-2 peer-focus:text-base">
             Password
           </label>
           <button
@@ -108,22 +105,12 @@ export default function SignInForm() {
             )}
           </button>
         </div>
-
-        {/* Confirm Password */}
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            id="signin-confirm-password"
-            className="peer w-full px-4 pt-6 pb-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-transparent text-lg"
-            placeholder="Confirm Password"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={loading}
-          />
-          <label htmlFor="signin-confirm-password" className="absolute left-4 top-2 text-slate-500 dark:text-slate-400 text-base transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-lg peer-focus:top-2 peer-focus:text-base">
-            Confirm Password
-          </label>
+        
+        {/* Forgot password */}
+        <div className="flex justify-end">
+          <a href="#" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline transition-colors">
+            Forgot password?
+          </a>
         </div>
         
         {/* Error */}
@@ -145,18 +132,18 @@ export default function SignInForm() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Creating account...
+              Signing in...
             </div>
           ) : (
-            "Create Account"
+            "Sign In"
           )}
         </button>
         
-        {/* Sign in link */}
+        {/* Sign up link */}
         <div className="text-center mt-4">
-          <span className="text-slate-600 dark:text-slate-400">Already have an account? </span>
-          <a href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline transition-colors">
-            Sign in
+          <span className="text-slate-600 dark:text-slate-400">Don't have an account? </span>
+          <a href="/sigin" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline transition-colors">
+            Sign up
           </a>
         </div>
       </form>
