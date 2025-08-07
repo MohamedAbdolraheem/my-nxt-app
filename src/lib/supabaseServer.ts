@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { RequestCookies } from 'next/dist/server/web/spec-extension/cookies';
 
 interface SupabaseServerCtx {
-  cookies: RequestCookies;
+  cookies: RequestCookies | Promise<RequestCookies> | { getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void };
   canSet?: boolean;
 }
 
@@ -26,7 +26,9 @@ export const supabaseServer = async (ctx: SupabaseServerCtx) => {
             cookiesToSet.forEach(({ name, value }) => {
               // Next.js RequestCookies.set() only accepts name and value
               console.log('Setting cookie:', name);
-              cookies.set(name, value);
+              if ('set' in cookies && typeof cookies.set === 'function') {
+                cookies.set(name, value);
+              }
             });
           },
         }),

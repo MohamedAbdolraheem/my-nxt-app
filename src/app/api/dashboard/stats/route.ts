@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
     const categoryBreakdown: { [key: string]: number } = {};
     if (categoryStats) {
       categoryStats.forEach(expense => {
-        const categoryName = expense.categories?.name || 'Uncategorized';
+        const categoryName = expense.categories?.[0]?.name || 'Uncategorized';
         categoryBreakdown[categoryName] = (categoryBreakdown[categoryName] || 0) + Number(expense.amount);
       });
     }

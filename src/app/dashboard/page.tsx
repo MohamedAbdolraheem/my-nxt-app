@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import LogoutButton from '../components/LogoutButton';
 
 export default async function Dashboard() {
-  const supabase = await supabaseServer({ cookies: cookies() });
+  const supabase = await supabaseServer({ cookies: await cookies() });
   const { data: { session }, error } = await supabase.auth.getSession();
   const user = session?.user;
 
