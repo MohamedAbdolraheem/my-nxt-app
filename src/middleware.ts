@@ -1,6 +1,3 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
-
 // Temporarily disabled to prevent 500 errors
 /*
 export async function middleware(request: NextRequest) {
