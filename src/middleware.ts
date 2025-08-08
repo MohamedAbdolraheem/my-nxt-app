@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Temporarily disabled to prevent 500 errors
+/*
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: {
@@ -42,6 +44,7 @@ export async function middleware(request: NextRequest) {
 
   return response;
 }
+*/
 
 export const config = {
   matcher: [
