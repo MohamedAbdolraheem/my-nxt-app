@@ -14,12 +14,9 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          const cookies = request.cookies.getAll();
-          console.log('Middleware getting cookies:', cookies.map(c => c.name));
-          return cookies;
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          console.log('Middleware setting cookies:', cookiesToSet.map(c => c.name));
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
             response.cookies.set(name, value, options);
@@ -33,17 +30,15 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
 
-  // Debug logging
-  console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', user ? 'Authenticated' : 'Not authenticated', 'Session:', !!session, 'Cookies:', request.cookies.getAll().map(c => c.name));
+  // Define protected routes
+  const protectedRoutes = ['/dashboard', '/expenses', '/categories'];
+  const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route));
 
-  // Temporarily disable redirects to test session
   // Only redirect if accessing protected route without authentication
-  // if (isProtectedRoute && !user) {
-  //   // Redirect to login if accessing protected route without authentication
-  //   console.log('Redirecting to login - no user found');
-  //   const redirectUrl = new URL('/login', request.url);
-  //   return NextResponse.redirect(redirectUrl);
-  // }
+  if (isProtectedRoute && !user) {
+    const redirectUrl = new URL('/login', request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return response;
 }
