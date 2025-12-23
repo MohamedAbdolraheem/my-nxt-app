@@ -4,11 +4,21 @@ import { RequestCookies } from 'next/dist/server/web/spec-extension/cookies';
 interface SupabaseServerCtx {
   cookies: RequestCookies | Promise<RequestCookies> | Promise<{ getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void }> | { getAll: () => Array<{ name: string; value: string }>; set?: (name: string, value: string) => void };
   canSet?: boolean;
+  headers?: Headers;
 }
 
 export const supabaseServer = async (ctx: SupabaseServerCtx) => {
   const cookies = await ctx.cookies;
   const canSet = !!ctx.canSet && typeof cookies.set === 'function';
+
+  // Check for Bearer token in Authorization header (for mobile apps)
+  let accessToken: string | undefined;
+  if (ctx.headers) {
+    const authHeader = ctx.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7);
+    }
+  }
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,6 +43,11 @@ export const supabaseServer = async (ctx: SupabaseServerCtx) => {
           },
         }),
       },
+      global: {
+        headers: accessToken ? {
+          Authorization: `Bearer ${accessToken}`
+        } : {}
+      }
     }
   );
 };

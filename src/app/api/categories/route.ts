@@ -5,10 +5,12 @@ import { supabaseServer } from '@/lib/supabaseServer';
 // GET /api/categories - Get all categories for the authenticated user
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    console.log('Categories API - User:', user ? 'Authenticated' : 'Not authenticated', 'Error:', userError);
     
     if (userError || !user) {
       return NextResponse.json(
@@ -32,6 +34,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    console.log('Categories API - Fetched categories:', categories?.length || 0);
+
     return NextResponse.json({
       categories: categories || [],
       count: categories?.length || 0
@@ -49,7 +53,7 @@ export async function GET(req: NextRequest) {
 // POST /api/categories - Create a new category
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();

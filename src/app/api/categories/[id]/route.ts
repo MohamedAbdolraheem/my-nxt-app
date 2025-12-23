@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -67,7 +67,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -191,7 +191,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();

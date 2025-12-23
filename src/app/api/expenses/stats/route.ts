@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 
-// GET /api/dashboard/stats - Get dashboard statistics
+// GET /api/expenses/stats - Get expense statistics (redirects to dashboard stats)
 export async function GET(req: NextRequest) {
   try {
     const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log('User:', user);
     
     if (userError || !user) {
       return NextResponse.json(
@@ -75,8 +74,10 @@ export async function GET(req: NextRequest) {
       .from('expenses')
       .select(`
         amount,
-        category_id,
-        categories!inner(id, name)
+        categories (
+          id,
+          name
+        )
       `)
       .eq('user_id', user.id)
       .not('category_id', 'is', null);
@@ -138,7 +139,7 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Dashboard stats API error:', error);
+    console.error('Expense stats API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

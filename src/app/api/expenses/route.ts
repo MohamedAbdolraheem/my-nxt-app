@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 // GET /api/expenses - Get all expenses for the authenticated user with filtering
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -55,12 +55,10 @@ export async function GET(req: NextRequest) {
       .from('expenses')
       .select(`
         *,
-        categories (
-          id,
-          name
-        )
+        category:categories(*)
       `)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
     // Apply filters
     if (categoryId) {
@@ -93,6 +91,12 @@ export async function GET(req: NextRequest) {
     // Execute the query
     const { data: expenses, error, count } = await query;
 
+    console.log('GET Expenses - Query result:', { 
+      expensesCount: expenses?.length || 0, 
+      error, 
+      sampleExpense: expenses?.[0] 
+    });
+
     if (error) {
       console.error('Error fetching expenses:', error);
       return NextResponse.json(
@@ -120,6 +124,14 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(totalCount / limit),
         hasNext: page * limit < totalCount,
         hasPrev: page > 1
+      },
+      debug: {
+        query_used: `SELECT *, categories(id, name) FROM expenses WHERE user_id = ${user.id}`,
+        expenses_with_categories: expenses?.map(exp => ({
+          id: exp.id,
+          category_id: exp.category_id,
+          has_category_data: !!exp.categories
+        }))
       }
     });
 
@@ -135,7 +147,7 @@ export async function GET(req: NextRequest) {
 // POST /api/expenses - Create a new expense
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false });
+    const supabase = await supabaseServer({ cookies: req.cookies, canSet: false, headers: req.headers });
     
     // Get the authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -197,13 +209,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (category_id !== undefined) {
+    if (category_id !== undefined && category_id !== null) {
       if (typeof category_id !== 'number') {
+        console.log('Category ID validation failed - not a number:', category_id);
         return NextResponse.json(
           { error: 'Category ID must be a number' },
           { status: 400 }
         );
       }
+
+      console.log('Validating category ID:', category_id, 'for user:', user.id);
 
       // Verify category exists and belongs to user
       const { data: category, error: categoryError } = await supabase
@@ -213,12 +228,17 @@ export async function POST(req: NextRequest) {
         .eq('user_id', user.id)
         .single();
 
+      console.log('Category validation result:', { category, categoryError });
+
       if (categoryError || !category) {
+        console.log('Category not found or error:', categoryError);
         return NextResponse.json(
           { error: 'Category not found' },
           { status: 404 }
         );
       }
+
+      console.log('Category validation passed:', category);
     }
 
     // Create the expense
@@ -226,16 +246,21 @@ export async function POST(req: NextRequest) {
       amount: number;
       user_id: string;
       note: string | null;
-      category_id?: number;
+      category_id?: number | null;
     } = {
       amount,
       user_id: user.id,
       note: note?.trim() || null
     };
 
-    if (category_id) {
+    // Only set category_id if it's provided and valid
+    if (category_id !== undefined && category_id !== null) {
       expenseData.category_id = category_id;
+    } else {
+      expenseData.category_id = null;
     }
+
+    console.log('Expense data to insert:', expenseData);
 
     const { data: expense, error } = await supabase
       .from('expenses')
@@ -249,6 +274,8 @@ export async function POST(req: NextRequest) {
       `)
       .single();
 
+    console.log('Supabase insert result:', { expense, error });
+
     if (error) {
       console.error('Error creating expense:', error);
       return NextResponse.json(
@@ -259,7 +286,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: 'Expense created successfully',
-      expense
+      expense,
+      debug: {
+        received_category_id: category_id,
+        saved_category_id: expense?.category_id,
+        expense_data_sent: expenseData
+      }
     }, { status: 201 });
 
   } catch (error) {

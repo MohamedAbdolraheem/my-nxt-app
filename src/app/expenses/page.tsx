@@ -28,12 +28,33 @@ export default function ExpensesPage() {
 
   // Fetch categories and expenses
   useEffect(() => {
-    fetch('/api/categories').then(res => res.json()).then(res => {
-      if (res.categories) setCategories(res.categories);
-    });
-    fetch('/api/expenses').then(res => res.json()).then(res => {
-      if (res.expenses) setExpenses(res.expenses);
-    });
+    const fetchData = async () => {
+      try {
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories');
+        const categoriesData = await categoriesResponse.json();
+        
+        if (categoriesResponse.ok && categoriesData.categories) {
+          setCategories(categoriesData.categories);
+        } else {
+          console.error('Categories fetch error:', categoriesData);
+        }
+
+        // Fetch expenses
+        const expensesResponse = await fetch('/api/expenses');
+        const expensesData = await expensesResponse.json();
+        
+        if (expensesResponse.ok && expensesData.expenses) {
+          setExpenses(expensesData.expenses);
+        } else {
+          console.error('Expenses fetch error:', expensesData);
+        }
+      } catch (err) {
+        console.error('Data fetch error:', err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Add expense
@@ -41,14 +62,20 @@ export default function ExpensesPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    const requestData = { 
+      amount: Number(amount), 
+      note, 
+      category_id: categoryId && categoryId !== '' ? Number(categoryId) : null 
+    };
+    
+    console.log('Frontend sending data:', requestData);
+    console.log('CategoryId state:', categoryId, 'Type:', typeof categoryId);
+    
     const res = await fetch('/api/expenses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        amount: Number(amount), 
-        note, 
-        category_id: categoryId ? Number(categoryId) : undefined 
-      }),
+      body: JSON.stringify(requestData),
     }).then(r => r.json());
     setLoading(false);
     if (res.expense) {
@@ -102,15 +129,14 @@ export default function ExpensesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Category
+                    Category (Optional)
                   </label>
                   <select
                     className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     value={categoryId}
                     onChange={e => setCategoryId(e.target.value)}
-                    required
                   >
-                    <option value="">Select category</option>
+                    <option value="">No category</option>
                     {categories.map((cat: Category) => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}

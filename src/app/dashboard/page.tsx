@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { supabaseServer } from '@/lib/supabaseServer';
 import LogoutButton from '../components/LogoutButton';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function Dashboard() {
   const supabase = await supabaseServer({ cookies: await cookies() });
@@ -17,6 +19,7 @@ export default async function Dashboard() {
     redirect('/login');
   }
 
+ 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
@@ -96,7 +99,7 @@ export default async function Dashboard() {
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-slate-900 dark:text-white">Add New Expense</p>
+                <Link className="font-medium text-slate-900 dark:text-white" href="/expenses">Add New Expense</Link>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Record a new transaction</p>
               </div>
             </button>
