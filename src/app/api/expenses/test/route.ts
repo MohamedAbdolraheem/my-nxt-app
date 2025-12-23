@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       body = await req.json();
     } catch (parseError) {
       return NextResponse.json(
-        { error: 'Invalid JSON in request body', parseError: parseError.message },
+        { error: 'Invalid JSON in request body', parseError: parseError instanceof Error ? parseError.message : String(parseError) },
         { status: 400 }
       );
     }
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
