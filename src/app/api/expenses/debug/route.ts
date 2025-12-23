@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get a sample expense with category
-    const { data: sampleExpense, error: expenseError } = await supabase
+    const { data: sampleExpense } = await supabase
       .from('expenses')
       .select(`
         *,
@@ -69,9 +69,11 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error) {
+    const errMsg =
+      error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: errMsg },
       { status: 500 }
     );
   }
-} 
+}

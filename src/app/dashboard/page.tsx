@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { supabaseServer } from '@/lib/supabaseServer';
 import LogoutButton from '../components/LogoutButton';
-import { useRouter } from 'next/navigation';
+
 import Link from 'next/link';
 
 export default async function Dashboard() {
